@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lotofácil</title>
+  <!-- Importando fonte do Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet" />
+  <!-- Importando Chart.js para exibir o gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Reset e estilo base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      width: 100%;
+      max-width: 900px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    /* Estilo para os botões de ação */
+    .botoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .botoes button {
+      padding: 10px 20px;
+      background: #fff;
+      color: #5563DE;
+      border: none;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .botoes button:hover {
+      background: #f0f0f0;
+    }
+    /* Loader personalizado */
+    .loader {
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      border-top: 8px solid #fff;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 30px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Cards para exibir resultados */
+    .result-card {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .result-card h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .result-card p {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    /* Container para o gráfico */
+    #grafico-container {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    /* Estilo para as listas de números quentes e frios */
+    .lista-numeros {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .lista-numeros div {
+      flex: 1 1 40%;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 5px;
+      text-align: center;
+    }
+    .lista-numeros h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .lista-numeros p {
+      font-size: 16px;
+    }
+    /* Estilo para a área do jogo */
+    .jogo-container {
+      text-align: center;
+    }
+    .numeros-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .numeros-grid button {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .numeros-grid button:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .numeros-grid button.selected {
+      background: #fff;
+      color: #5563DE;
+      font-weight: bold;
+    }
+    /* Responsividade para telas menores */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 22px;
+      }
+      .botoes button {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+      .result-card h2 {
+        font-size: 18px;
+      }
+      .result-card p {
+        font-size: 14px;
+      }
+      .lista-numeros h3 {
+        font-size: 16px;
+      }
+      .lista-numeros p {
+        font-size: 14px;
+      }
+      .numeros-grid button {
+        padding: 8px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Lotinha 1.0</h1>
+    </header>
+    <!-- Botões para acionar as funcionalidades -->
+    <div class="botoes">
+      <button onclick="verTodosResultados()">Ver Todos os Resultados</button>
+      <button onclick="calcularNumeros()">Calcular 2 Números (últimos 5 sorteios)</button>
+      <button onclick="mostrarCriarJogo()">Criar Jogo e Ver Acertos</button>
+      <button onclick="calcularFechamento()">Definir 23 Números para Fechamento</button>
+      <button onclick="mostrarGrafico()">Ver Gráfico e Números Quentes e Frios</button>
+    </div>
+    <!-- Área para exibição de conteúdo dinâmico -->
+    <div id="content"></div>
+  </div>
+
+  <script>
+    /* Função para exibir o loader */
+    function exibirLoader() {
+      document.getElementById('content').innerHTML = '<div class="loader"></div>';
+    }
+
+    /* 1. Função para ver todos os resultados */
+    async function verTodosResultados() {
+      exibirLoader();
+      try {
+        const resposta = await fetch('https://loteriascaixa-api.herokuapp.com/api/lotofacil');
+        const dados = await resposta.json();
+        let html = `<h2>Todos os Resultados</h2>`;
+        dados.forEach(concurso => {
+          html += `
+            <div class="result-card">
+              <h2>Concurso ${concurso.concurso}</h2>
+              <p><strong>Data:</strong> ${concurso.data}</p>
+              <p><strong>Números:</strong> ${concurso.dezenas.join(', ')}</p>
+            </div>
+          `;
+        });
+        document.getElementById('content').innerHTML = html;
+      } catch (error) {
+        document.getElementById('content').innerHTML = `<p>Erro ao obter os resultados.</p>`;
+        console.error('Erro:', error);
+      }
+    }
+
+    /* 2. Função para calcular 2 números com base nos últimos 5 sorteios */
+    async function calcularNumeros() {
+      exibirLoader();
+      try {
+        const resposta = await fetch('https://loteriascaixa-api.herokuapp.com/api/lotofacil?concurso=5');
+        const dados = await resposta.json();
+        const sugeridos = analisarNumerosNaoSorteados(dados);
+        let html = `<h2>Números Sugeridos para o Próximo Sorteio</h2>`;
+        html += `<p>${sugeridos.join(', ')}</p>`;
+        document.getElementById('content').innerHTML = html;
+      } catch (error) {
+        document.getElementById('content').innerHTML = `<p>Erro ao obter os resultados para análise.</p>`;
+        console.error('Erro:', error);
+      }
+    }
+
+    /* Função de análise para identificar 2 números com menor frequência nos últimos 5 concursos */
+    function analisarNumerosNaoSorteados(dados) {
+      const todosNumeros = Array.from({ length: 25 }, (_, i) =>
+        String(i + 1).padStart(2, '0')
+      );
+      let frequencia = {};
+      todosNumeros.forEach(num => (frequencia[num] = 0));
+
+      dados.forEach(concurso => {
+        concurso.dezenas.forEach(num => {
+          let numFormatado = num.padStart(2, '0');
+          if (frequencia.hasOwnProperty(numFormatado)) {
+            frequencia[numFormatado]++;
+          }
+        });
+      });
+
+      let naoSorteados = todosNumeros.filter(num => frequencia[num] === 0);
+      if (naoSorteados.length >= 2) {
+        return naoSorteados.slice(0, 2);
+      } else {
+        let ordenados = todosNumeros.sort((a, b) => frequencia[a] - frequencia[b]);
+        return ordenados.slice(0, 2);
+      }
+    }
+
+    /* 3. Função para exibir a interface de criação de jogo */
+    function mostrarCriarJogo() {
+      const html = `
+        <div class="jogo-container">
+          <h2>Crie seu Jogo - Selecione 15 Números</h2>
+          <div class="numeros-grid">
+            ${Array.from({ length: 25 }, (_, i) => {
+              const num = String(i + 1).padStart(2, '0');
+              return `<button class="numero" data-num="${num}">${num}</button>`;
+            }).join('')}
+          </div>
+          <button onclick="verificarJogo()" class="btn-refresh">Verificar Jogo</button>
+          <div id="jogo-result"></div>
+        </div>
+      `;
+      document.getElementById('content').innerHTML = html;
+      document.querySelectorAll('.numeros-grid .numero').forEach(btn => {
+        btn.addEventListener('click', function () {
+          if (btn.classList.contains('selected')) {
+            btn.classList.remove('selected');
+          } else {
+            const selecionados = document.querySelectorAll('.numeros-grid .selected');
+            if (selecionados.length < 15) {
+              btn.classList.add('selected');
+            } else {
+              alert('Você já selecionou 15 números!');
+            }
+          }
+        });
+      });
+    }
+
+    /* Função para comparar o jogo criado com todos os concursos e contar acertos */
+    async function verificarJogo() {
+      const selecionados = Array.from(document.querySelectorAll('.numeros-grid .selected')).map(
+        btn => btn.getAttribute('data-num')
+      );
+      if (selecionados.length !== 15) {
+        alert('Por favor, selecione exatamente 15 números.');
+        return;
+      }
+      document.getElementById('jogo-result').innerHTML = '<div class="loader"></div>';
+      try {
+        const resposta = await fetch('https://loteriascaixa-api.herokuapp.com/api/lotofacil');
+        const dados = await resposta.json();
+        let resultadoHtml = `<h3>Acertos do seu jogo em cada concurso:</h3>`;
+        dados.forEach(concurso => {
+          const hits = concurso.dezenas.filter(num =>
+            selecionados.includes(num.padStart(2, '0'))
+          ).length;
+          resultadoHtml += `<p>Concurso ${concurso.concurso} - ${hits} acertos</p>`;
+        });
+        document.getElementById('jogo-result').innerHTML = resultadoHtml;
+      } catch (error) {
+        document.getElementById('jogo-result').innerHTML = `<p>Erro ao buscar os concursos.</p>`;
+        console.error('Erro:', error);
+      }
+    }
+
+    /* 4. Função para definir 23 números para fechamento com base nos últimos 5 sorteios */
+    async function calcularFechamento() {
+      exibirLoader();
+      try {
+        const resposta = await fetch('https://loteriascaixa-api.herokuapp.com/api/lotofacil?concurso=5');
+        const dados = await resposta.json();
+
+        let frequencia = {};
+        for (let i = 1; i <= 25; i++) {
+          const numStr = String(i).padStart(2, '0');
+          frequencia[numStr] = 0;
+        }
+        dados.forEach(concurso => {
+          concurso.dezenas.forEach(num => {
+            let numFormatado = num.padStart(2, '0');
+            if (frequencia.hasOwnProperty(numFormatado)) {
+              frequencia[numFormatado]++;
+            }
+          });
+        });
+
+        let numerosOrdenados = Object.keys(frequencia).sort((a, b) => frequencia[b] - frequencia[a]);
+        let fechamento = numerosOrdenados.slice(0, 23);
+
+        const html = `
+          <h2>Fechamento com 23 Números</h2>
+          <p>Baseado nos últimos 5 sorteios, estes são os 23 números selecionados:</p>
+          <p>${fechamento.join(', ')}</p>
+          <p><em>Se os 15 números sorteados estiverem contidos nesse fechamento, ao gerar todas as combinações de 15 números a partir dele, algum jogo terá 15 acertos.</em></p>
+        `;
+        document.getElementById('content').innerHTML = html;
+      } catch (error) {
+        document.getElementById('content').innerHTML = `<p>Erro ao calcular o fechamento.</p>`;
+        console.error('Erro:', error);
+      }
+    }
+
+    /* 5. Função para exibir o gráfico e as listas de números quentes e frios */
+    async function mostrarGrafico() {
+      exibirLoader();
+      try {
+        // Utiliza os últimos 20 concursos para embasamento estatístico
+        const resposta = await fetch('https://loteriascaixa-api.herokuapp.com/api/lotofacil?concurso=20');
+        const dados = await resposta.json();
+
+        // Inicializa a frequência para números de "01" a "25"
+        let frequencia = {};
+        for (let i = 1; i <= 25; i++) {
+          const numStr = String(i).padStart(2, '0');
+          frequencia[numStr] = 0;
+        }
+        dados.forEach(concurso => {
+          concurso.dezenas.forEach(num => {
+            let numFormatado = num.padStart(2, '0');
+            if (frequencia.hasOwnProperty(numFormatado)) {
+              frequencia[numFormatado]++;
+            }
+          });
+        });
+
+        // Preparando os dados para o gráfico
+        const labels = Object.keys(frequencia).sort((a, b) => Number(a) - Number(b));
+        const dataFrequencia = labels.map(num => frequencia[num]);
+
+        // Cria o container do gráfico e das listas de quentes e frios
+        let html = `
+          <h2>Gráfico e Análise: Números Quentes e Frios</h2>
+          <div id="grafico-container">
+            <canvas id="graficoNumeros"></canvas>
+          </div>
+        `;
+        // Calcula os números quentes e frios:
+        // Aqui usamos os 6 números com maior frequência como "quentes" e os 6 com menor frequência como "frios".
+        const ordenados = Object.entries(frequencia).sort((a, b) => b[1] - a[1]);
+        const numerosQuentes = ordenados.slice(0, 6).map(item => `${item[0]} (${item[1]})`);
+        const numerosFrios = ordenados.slice(-6).map(item => `${item[0]} (${item[1]})`);
+
+        html += `
+          <div class="lista-numeros">
+            <div>
+              <h3>Números Quentes</h3>
+              <p>${numerosQuentes.join(', ')}</p>
+            </div>
+            <div>
+              <h3>Números Frios</h3>
+              <p>${numerosFrios.join(', ')}</p>
+            </div>
+          </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+
+        // Criação do gráfico de barras
+        const ctx = document.getElementById('graficoNumeros').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Frequência',
+              data: dataFrequencia,
+              backgroundColor: labels.map((_, i) =>
+                dataFrequencia[i] >= ordenados[5][1] ? 'rgba(255, 99, 132, 0.7)' :
+                dataFrequencia[i] <= ordenados[ordenados.length - 6][1] ? 'rgba(54, 162, 235, 0.7)' :
+                'rgba(75, 192, 192, 0.7)'
+              ),
+              borderColor: 'rgba(255, 255, 255, 0.8)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.2)' }
+              },
+              x: {
+                ticks: { color: '#fff' },
+                grid: { display: false }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: { color: '#fff' }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        document.getElementById('content').innerHTML = `<p>Erro ao carregar os dados para o gráfico.</p>`;
+        console.error('Erro:', error);
+      }
+    }
+  </script>
+</body>
+</html>
